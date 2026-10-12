@@ -415,11 +415,11 @@
     {
       "id": "admin-0cdd6f53",
       "username": "info@topsparkdigital.com",
-      "passwordHash": "d8923f15c0fcc72eeb897732964095f9fd66d6344e2a8d56fe2112e9e794e287e920ef846d47474336c2716994bd64fa1846b8b4c7163a9a880be95bd94a96fd",
-      "salt": "193081ef2fc58e79d834503dc8de6b81",
+      "passwordHash": "253b97b43c427b7a48d93cb2745217387150d3d723b1cb06eac35ef67b3d1cd71d127444001245bc4acd14ae941edc41af274b5d4eff50c17bf1f523c2b83501",
+      "salt": "4cf883aebca0bf1113625083dcd31897",
       "role": "admin",
       "createdAt": "2026-10-12T12:51:43.558Z",
-      "lastLogin": "2026-10-12T14:36:50.040Z"
+      "lastLogin": "2026-10-12T15:50:10.891Z"
     }
   ]
 }

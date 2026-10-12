@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Send, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { api } from '../utils/api';
 
 interface ContactFormProps {
   initialService?: string;
@@ -75,26 +76,14 @@ export const ContactForm: React.FC<ContactFormProps> = ({ initialService = '', o
     setStatus('submitting');
 
     try {
-      const response = await fetch('/api/enquiries', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to submit enquiry. Please try again.');
-      }
+      const data = await api.submitEnquiry(formData);
 
       setStatus('success');
       setSubmittedId(data.enquiryId || '');
       if (onSuccess) onSuccess();
     } catch (err: unknown) {
       setStatus('error');
-      const msg = err instanceof Error ? err.message : 'Connection failed. Please reach us via WhatsApp directly.';
+      const msg = err instanceof Error ? err.message : 'Connection failed. Please reach us directly.';
       setErrorMessage(msg);
     }
   };

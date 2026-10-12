@@ -15,6 +15,7 @@ import { TermsPage } from './pages/TermsPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { initialData } from './data/initialData';
 import { ContentDatabase } from './types';
+import { api } from './utils/api';
 
 export default function App() {
   const [currentPath, setCurrentPath] = useState<string>(() => window.location.pathname || '/');
@@ -31,11 +32,8 @@ export default function App() {
 
   // Fetch updated content from backend
   useEffect(() => {
-    fetch('/api/content')
-      .then((res) => {
-        if (!res.ok) throw new Error('Network response not ok');
-        return res.json();
-      })
+    api
+      .getContent()
       .then((serverContent) => {
         if (serverContent && serverContent.services) {
           setData((prev) => ({
@@ -46,7 +44,7 @@ export default function App() {
       })
       .catch((err) => {
         // Silently use bundled initialData if server is compiling or starting
-        console.log('[Client] Using verified bundled initialData cache');
+        console.log('[Client] Using verified bundled initialData cache:', err.message);
       });
   }, [currentPath]);
 

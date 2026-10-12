@@ -17,7 +17,7 @@ const activeSessions = new Map<string, SessionData>();
 
 // Simple login rate limiting
 const loginAttempts = new Map<string, { count: number; firstAttempt: number }>();
-const MAX_ATTEMPTS = 5;
+const MAX_ATTEMPTS = 10;
 const LOCKOUT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
 
 export function checkRateLimit(ip: string): boolean {

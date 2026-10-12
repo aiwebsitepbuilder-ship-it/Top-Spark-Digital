@@ -59,10 +59,40 @@ class DatabaseService {
   }
 
   private loadOrCreate(): AppDatabaseState {
+    const defaultAdminPassword = process.env.ADMIN_PASSWORD || 'adminadmin';
+    const defaultAdminEmail = process.env.ADMIN_EMAIL || 'info@topsparkdigital.com';
+
     if (fs.existsSync(DB_FILE)) {
       try {
         const raw = fs.readFileSync(DB_FILE, 'utf-8');
-        const parsed = JSON.parse(raw);
+        const parsed: AppDatabaseState = JSON.parse(raw);
+
+        // Ensure database state has admin users array
+        if (!parsed.adminUsers || parsed.adminUsers.length === 0) {
+          const { hash, salt } = hashPassword(defaultAdminPassword);
+          parsed.adminUsers = [
+            {
+              id: 'admin-' + crypto.randomBytes(4).toString('hex'),
+              username: defaultAdminEmail,
+              passwordHash: hash,
+              salt: salt,
+              role: 'admin',
+              createdAt: new Date().toISOString(),
+            },
+          ];
+          this.persistSync(parsed);
+        } else if (process.env.ADMIN_PASSWORD) {
+          // If ADMIN_PASSWORD is explicitly set via environment, ensure admin user is synced
+          const mainAdmin = parsed.adminUsers[0];
+          const { hash, salt } = hashPassword(process.env.ADMIN_PASSWORD);
+          if (mainAdmin.passwordHash !== hash) {
+            mainAdmin.passwordHash = hash;
+            mainAdmin.salt = salt;
+            if (process.env.ADMIN_EMAIL) mainAdmin.username = process.env.ADMIN_EMAIL;
+            this.persistSync(parsed);
+          }
+        }
+
         return parsed;
       } catch (err) {
         console.error('Failed to parse existing database file, creating fresh backup:', err);
@@ -70,7 +100,6 @@ class DatabaseService {
     }
 
     // Initialize fresh database state
-    const defaultAdminPassword = process.env.ADMIN_PASSWORD || 'adminadmin';
     const { hash, salt } = hashPassword(defaultAdminPassword);
 
     const freshState: AppDatabaseState = {
@@ -80,7 +109,7 @@ class DatabaseService {
       adminUsers: [
         {
           id: 'admin-' + crypto.randomBytes(4).toString('hex'),
-          username: 'info@topsparkdigital.com',
+          username: defaultAdminEmail,
           passwordHash: hash,
           salt: salt,
           role: 'admin',
@@ -170,9 +199,16 @@ class DatabaseService {
 
   // Admin User & Auth Operations
   public findUserByUsername(username: string): AdminUserRecord | undefined {
-    return this.state.adminUsers.find(
-      (u) => u.username.toLowerCase() === username.trim().toLowerCase()
-    );
+    const clean = username.trim().toLowerCase();
+    return this.state.adminUsers.find((u) => {
+      const uLower = u.username.toLowerCase();
+      return (
+        uLower === clean ||
+        (clean === 'admin' && u.role === 'admin') ||
+        (clean === 'admin@topsparkdigital.com' && uLower === 'info@topsparkdigital.com') ||
+        (clean === 'info@topsparkdigital.com' && uLower === 'admin@topsparkdigital.com')
+      );
+    });
   }
 
   public updateLastLogin(userId: string) {

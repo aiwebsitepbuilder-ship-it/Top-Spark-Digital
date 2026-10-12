@@ -19,6 +19,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { ContentDatabase, Enquiry, EnquiryStatus, CaseStudy } from '../types';
+import { api } from '../utils/api';
 
 interface AdminDashboardProps {
   onNavigateHome: () => void;
@@ -62,29 +63,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome }
   const fetchAdminData = async (authToken: string) => {
     try {
       // 1. Fetch Enquiries
-      const enqRes = await fetch('/api/admin/enquiries', {
-        headers: { Authorization: `Bearer ${authToken}` },
-      });
-      if (enqRes.status === 401) {
-        handleLogout();
-        return;
-      }
-      const enqData = await enqRes.json();
+      const enqData = await api.getEnquiries(authToken);
       if (enqData.enquiries) setEnquiries(enqData.enquiries);
 
       // 2. Fetch Content
-      const contentRes = await fetch('/api/admin/content', {
-        headers: { Authorization: `Bearer ${authToken}` },
-      });
-      const contentData = await contentRes.json();
+      const contentData = await api.getAdminContent(authToken);
       setContent(contentData);
 
       // 3. Fetch Diagnostics
-      const diagRes = await fetch('/api/health');
-      const diagData = await diagRes.json();
+      const diagData = await api.getHealth();
       setDiagnostics(diagData);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Failed to load admin data:', err);
+      const msg = err instanceof Error ? err.message : '';
+      if (msg.includes('401') || msg.includes('Authentication') || msg.includes('Session')) {
+        handleLogout();
+      }
     }
   };
 
@@ -94,16 +88,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome }
     setIsLoggingIn(true);
 
     try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || 'Authentication failed');
-      }
+      const data = await api.login(username, password);
 
       localStorage.setItem('topspark_admin_token', data.token);
       setToken(data.token);
@@ -118,10 +103,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome }
 
   const handleLogout = () => {
     if (token) {
-      fetch('/api/auth/logout', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-      }).catch(() => {});
+      api.logout(token).catch(() => {});
     }
     localStorage.removeItem('topspark_admin_token');
     setToken(null);
@@ -131,15 +113,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome }
     if (!token) return;
     setStatusLoading(true);
     try {
-      const res = await fetch(`/api/admin/enquiries/${id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ status: newStatus, notes }),
-      });
-      const data = await res.json();
+      const data = await api.updateEnquiry(id, newStatus, notes, token);
       if (data.success && data.enquiry) {
         setEnquiries((prev) => prev.map((e) => (e.id === id ? data.enquiry : e)));
         if (selectedEnquiry && selectedEnquiry.id === id) {
@@ -156,14 +130,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome }
   const handleDeleteEnquiry = async (id: string) => {
     if (!token || !confirm('Are you sure you want to securely delete this inquiry record?')) return;
     try {
-      const res = await fetch(`/api/admin/enquiries/${id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        setEnquiries((prev) => prev.filter((e) => e.id !== id));
-        if (selectedEnquiry?.id === id) setSelectedEnquiry(null);
-      }
+      await api.deleteEnquiry(id, token);
+      setEnquiries((prev) => prev.filter((e) => e.id !== id));
+      if (selectedEnquiry?.id === id) setSelectedEnquiry(null);
     } catch (err) {
       console.error('Failed to delete enquiry:', err);
     }
@@ -173,18 +142,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome }
     if (!token || !content) return;
     setContentSaveSuccess(false);
     try {
-      const res = await fetch('/api/admin/content', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(content),
-      });
-      if (res.ok) {
-        setContentSaveSuccess(true);
-        setTimeout(() => setContentSaveSuccess(false), 3000);
-      }
+      await api.updateAdminContent(content, token);
+      setContentSaveSuccess(true);
+      setTimeout(() => setContentSaveSuccess(false), 3000);
     } catch (err) {
       alert('Failed to save content modifications.');
     }
@@ -196,17 +156,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateHome }
     setPwMessage(null);
 
     try {
-      const res = await fetch('/api/admin/change-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ currentPassword: currentPw, newPassword: newPw }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-
+      await api.changePassword(currentPw, newPw, token);
       setPwMessage({ type: 'success', text: 'Password successfully updated.' });
       setCurrentPw('');
       setNewPw('');
