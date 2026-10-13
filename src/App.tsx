@@ -17,17 +17,59 @@ import { initialData } from './data/initialData';
 import { ContentDatabase } from './types';
 import { api } from './utils/api';
 
+// Universal Path Normalization Helper
+// Works seamlessly on root domains (topsparkdigital.com), subpaths (/repo-name/), and hash fallback (/ #/...)
+function getNormalizedPath(): string {
+  if (typeof window === 'undefined') return '/';
+
+  // 1. Check for Hash-based routing: /#/services or #/services
+  if (window.location.hash) {
+    const rawHash = window.location.hash.replace(/^#/, '');
+    if (rawHash.startsWith('/')) {
+      const cleanHash = rawHash.split('?')[0];
+      return cleanHash;
+    }
+  }
+
+  // 2. Extract pathname
+  let path = window.location.pathname || '/';
+
+  // 3. Strip base URL if deployed with a Vite base path (e.g. /my-repo/)
+  const baseUrl = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
+  if (baseUrl && baseUrl !== '/' && baseUrl !== '.' && path.startsWith(baseUrl)) {
+    path = path.slice(baseUrl.length);
+  } else if (typeof window.location.hostname === 'string' && window.location.hostname.endsWith('github.io')) {
+    // Automatic GitHub Pages repository subpath detection
+    // e.g. /my-repo/services -> /services
+    const segments = path.split('/').filter(Boolean);
+    const knownRoutes = ['services', 'case-studies', 'products', 'about', 'contact', 'admin', 'privacy', 'terms'];
+    if (segments.length > 0 && !knownRoutes.includes(segments[0])) {
+      path = '/' + segments.slice(1).join('/');
+    }
+  }
+
+  if (!path || path === '') return '/';
+  if (!path.startsWith('/')) path = '/' + path;
+  if (path.length > 1 && path.endsWith('/')) path = path.slice(0, -1);
+  return path;
+}
+
 export default function App() {
-  const [currentPath, setCurrentPath] = useState<string>(() => window.location.pathname || '/');
+  const [currentPath, setCurrentPath] = useState<string>(() => getNormalizedPath());
   const [data, setData] = useState<ContentDatabase>(initialData);
 
-  // Sync with browser back/forward buttons
+  // Sync with browser back/forward buttons and hash navigation
   useEffect(() => {
-    const handlePopState = () => {
-      setCurrentPath(window.location.pathname || '/');
+    const handleLocationChange = () => {
+      setCurrentPath(getNormalizedPath());
     };
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+
+    window.addEventListener('popstate', handleLocationChange);
+    window.addEventListener('hashchange', handleLocationChange);
+    return () => {
+      window.removeEventListener('popstate', handleLocationChange);
+      window.removeEventListener('hashchange', handleLocationChange);
+    };
   }, []);
 
   // Fetch updated content from backend
@@ -43,14 +85,14 @@ export default function App() {
         }
       })
       .catch((err) => {
-        // Silently use bundled initialData if server is compiling or starting
-        console.log('[Client] Using verified bundled initialData cache:', err.message);
+        // Silently use bundled initialData if server is compiling, starting, or in static hosting mode
+        console.log('[Client] Active bundled initialData available:', err?.message || 'offline');
       });
   }, [currentPath]);
 
   const handleNavigate = (path: string) => {
-    // Handle hash anchors if navigating within same page
-    if (path.includes('#') && path.startsWith(currentPath)) {
+    // Handle in-page hash anchors
+    if (path.includes('#') && !path.startsWith('/#')) {
       const hash = path.split('#')[1];
       const element = document.getElementById(hash);
       if (element) {
@@ -59,10 +101,23 @@ export default function App() {
       }
     }
 
-    // Strip hash for path comparison
-    const basePath = path.split('#')[0].split('?')[0];
-    setCurrentPath(basePath);
-    window.history.pushState({}, '', path);
+    const cleanPath = path.split('#')[0].split('?')[0] || '/';
+    setCurrentPath(cleanPath);
+
+    // Maintain subpath prefix if running under a custom base
+    const baseUrl = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
+    let pushUrl = path;
+    if (baseUrl && baseUrl !== '/' && baseUrl !== '.' && !path.startsWith(baseUrl)) {
+      pushUrl = `${baseUrl}${path}`;
+    }
+
+    try {
+      window.history.pushState({}, '', pushUrl);
+    } catch {
+      // Fallback for strict sandbox iframe / file protocol
+      window.location.hash = '#' + path;
+    }
+
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
