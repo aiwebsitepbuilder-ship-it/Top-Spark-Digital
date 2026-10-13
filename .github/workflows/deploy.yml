@@ -33,8 +33,7 @@ jobs:
         
 
       - name: Install Dependencies
-        run: npm install
-
+        run: npm install --legacy-peer-deps
       - name: Build Production Assets
         run: npm run build
 
