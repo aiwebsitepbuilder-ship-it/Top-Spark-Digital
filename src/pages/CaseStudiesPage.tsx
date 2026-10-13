@@ -8,10 +8,10 @@ interface CaseStudiesPageProps {
 }
 
 export const CaseStudiesPage: React.FC<CaseStudiesPageProps> = ({ data, onNavigate }) => {
-  const { caseStudies } = data;
+  const caseStudies = data?.caseStudies || [];
   const [selectedIndustry, setSelectedIndustry] = useState<string>('all');
 
-  const publishedStudies = caseStudies.filter((c) => c.status === 'published');
+  const publishedStudies = caseStudies.filter((c) => c && c.status === 'published');
 
   // Extract distinct industries for filter tabs
   const industries = ['all', ...Array.from(new Set(publishedStudies.map((c) => c.industry)))];

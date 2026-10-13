@@ -8,8 +8,12 @@ interface AboutPageProps {
 }
 
 export const AboutPage: React.FC<AboutPageProps> = ({ data, onNavigate }) => {
-  const { settings, teamMembers } = data;
-  const publishedTeam = teamMembers.filter((m) => m.published);
+  const settings = data?.settings || {
+    primaryPositioning: 'We Turn Businesses Into Digital Brands.',
+    supportingPositioning: 'From content and social media to SEO, Google Business Profile and digital solutions — Top Spark helps businesses build, manage and grow their digital presence.',
+  };
+  const teamMembers = data?.teamMembers || [];
+  const publishedTeam = teamMembers.filter((m) => m?.published);
 
   return (
     <div className="py-12 sm:py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16 sm:space-y-24">

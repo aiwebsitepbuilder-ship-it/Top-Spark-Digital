@@ -14,6 +14,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { ContentDatabase, CaseStudy } from '../types';
+import { initialData } from '../data/initialData';
 
 interface HomePageProps {
   data: ContentDatabase;
@@ -21,7 +22,11 @@ interface HomePageProps {
 }
 
 export const HomePage: React.FC<HomePageProps> = ({ data, onNavigate }) => {
-  const { settings, services, caseStudies, products, clients } = data;
+  const settings = data?.settings || initialData.settings;
+  const services = data?.services || initialData.services;
+  const caseStudies = data?.caseStudies || initialData.caseStudies;
+  const products = data?.products || initialData.products;
+  const clients = data?.clients || initialData.clients;
 
   const publishedCaseStudies = caseStudies.filter((c) => c.status === 'published');
   const featuredCaseStudies = publishedCaseStudies.slice(0, 4);

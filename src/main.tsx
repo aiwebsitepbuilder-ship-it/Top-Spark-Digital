@@ -3,14 +3,24 @@ import App from './App';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import './index.css';
 
-const rootElement = document.getElementById('root');
+function mountApplication() {
+  const rootElement = document.getElementById('root');
 
-if (!rootElement) {
-  throw new Error('Fatal: #root container element missing from document body');
+  if (!rootElement) {
+    console.error('[Top Spark Digital] Fatal: #root element missing from document body');
+    return;
+  }
+
+  createRoot(rootElement).render(
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
+  );
 }
 
-createRoot(rootElement).render(
-  <ErrorBoundary>
-    <App />
-  </ErrorBoundary>
-);
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', mountApplication);
+} else {
+  mountApplication();
+}
+

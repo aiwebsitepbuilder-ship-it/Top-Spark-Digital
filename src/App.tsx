@@ -48,7 +48,8 @@ function getNormalizedPath(): string {
     }
   }
 
-  if (!path || path === '') return '/';
+  path = path.replace(/\/index\.html$/i, '/').replace(/\/index$/i, '/');
+  if (!path || path === '' || path === '/home') return '/';
   if (!path.startsWith('/')) path = '/' + path;
   if (path.length > 1 && path.endsWith('/')) path = path.slice(0, -1);
   return path;
@@ -77,10 +78,18 @@ export default function App() {
     api
       .getContent()
       .then((serverContent) => {
-        if (serverContent && serverContent.services) {
+        if (serverContent && typeof serverContent === 'object' && Array.isArray(serverContent.services)) {
           setData((prev) => ({
             ...prev,
             ...serverContent,
+            settings: serverContent.settings || prev.settings,
+            services: serverContent.services || prev.services,
+            caseStudies: serverContent.caseStudies || prev.caseStudies,
+            products: serverContent.products || prev.products,
+            clients: serverContent.clients || prev.clients,
+            testimonials: serverContent.testimonials || prev.testimonials,
+            teamMembers: serverContent.teamMembers || prev.teamMembers,
+            blogPosts: serverContent.blogPosts || prev.blogPosts,
           }));
         }
       })

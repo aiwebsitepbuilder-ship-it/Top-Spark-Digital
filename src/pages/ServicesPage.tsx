@@ -8,7 +8,7 @@ interface ServicesPageProps {
 }
 
 export const ServicesPage: React.FC<ServicesPageProps> = ({ data, onNavigate }) => {
-  const { services } = data;
+  const services = data?.services || [];
 
   return (
     <div className="py-12 sm:py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16 sm:space-y-24">

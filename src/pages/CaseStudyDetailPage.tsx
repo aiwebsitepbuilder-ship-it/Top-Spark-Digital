@@ -9,8 +9,8 @@ interface CaseStudyDetailPageProps {
 }
 
 export const CaseStudyDetailPage: React.FC<CaseStudyDetailPageProps> = ({ slug, data, onNavigate }) => {
-  const { caseStudies } = data;
-  const study = caseStudies.find((c) => c.slug === slug);
+  const caseStudies = data?.caseStudies || [];
+  const study = caseStudies.find((c) => c && c.slug === slug);
 
   if (!study) {
     return (

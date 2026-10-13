@@ -13,17 +13,25 @@ async function handleResponse<T>(res: Response): Promise<T> {
   const isJson = contentType.includes('application/json');
 
   if (!res.ok) {
+    if (res.status === 404) {
+      throw new Error(
+        'Backend service endpoint unavailable on this static deployment. For direct inquiries, message us on WhatsApp (+8801674451806) or email info@topsparkdigital.com.'
+      );
+    }
+
     let errorMsg = `Server error (${res.status})`;
     if (isJson) {
       try {
         const errorData = await res.json();
         errorMsg = errorData.error || errorData.message || errorMsg;
       } catch {
-        // Fallback to default
+        // Fallback
       }
     } else {
       const text = await res.text();
-      if (text) errorMsg = text.slice(0, 150);
+      if (text && !text.includes('<!DOCTYPE') && !text.includes('<html')) {
+        errorMsg = text.slice(0, 150);
+      }
     }
     throw new Error(errorMsg);
   }

@@ -1,16 +1,34 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { defineConfig } from 'vite';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig(() => {
+  // Determine correct base path:
+  // 1. Explicit VITE_BASE_PATH environment variable (highest priority)
+  // 2. If a CNAME file exists in public/, a custom domain is active -> '/'
+  // 3. In GitHub Actions without custom domain -> '/<repo-name>/'
+  // 4. Default fallback -> './' (relative for maximum portability)
+  const hasCNAME = fs.existsSync(path.resolve(__dirname, 'public/CNAME'));
+  let calculatedBase = './';
+
+  if (process.env.VITE_BASE_PATH) {
+    calculatedBase = process.env.VITE_BASE_PATH;
+  } else if (hasCNAME || process.env.CUSTOM_DOMAIN) {
+    calculatedBase = '/';
+  } else if (process.env.GITHUB_REPOSITORY) {
+    const repoName = process.env.GITHUB_REPOSITORY.split('/')[1];
+    if (repoName) {
+      calculatedBase = `/${repoName}/`;
+    }
+  }
+
   return {
-    // Relative base path ensures assets resolve correctly on root domains,
-    // GitHub Pages subpaths (https://user.github.io/repo/), and Hostinger subdirectories.
-    base: process.env.VITE_BASE_PATH || './',
+    base: calculatedBase,
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
@@ -20,7 +38,6 @@ export default defineConfig(() => {
     build: {
       outDir: 'dist',
       assetsDir: 'assets',
-      // Generate clean chunks
       sourcemap: false,
     },
     server: {

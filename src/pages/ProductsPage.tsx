@@ -8,8 +8,8 @@ interface ProductsPageProps {
 }
 
 export const ProductsPage: React.FC<ProductsPageProps> = ({ data, onNavigate }) => {
-  const { products } = data;
-  const publishedProducts = products.filter((p) => p.status === 'published');
+  const products = data?.products || [];
+  const publishedProducts = products.filter((p) => p && p.status === 'published');
 
   return (
     <div className="py-12 sm:py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16 sm:space-y-24">
