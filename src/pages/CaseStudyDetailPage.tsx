@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowLeft, ArrowUpRight, CheckCircle2, Building2, Briefcase } from 'lucide-react';
 import { ContentDatabase, CaseStudy } from '../types';
+import { getAssetUrl } from '../utils/assetUrl';
 
 interface CaseStudyDetailPageProps {
   slug: string;
@@ -78,7 +79,7 @@ export const CaseStudyDetailPage: React.FC<CaseStudyDetailPageProps> = ({ slug, 
       <div className="rounded-3xl border border-white/[0.1] bg-[#0E1017] overflow-hidden shadow-2xl">
         <div className="relative aspect-video w-full overflow-hidden bg-slate-900">
           <img
-            src={study.image}
+            src={getAssetUrl(study.image)}
             alt={study.altText}
             className="w-full h-full object-cover object-center"
             referrerPolicy="no-referrer"

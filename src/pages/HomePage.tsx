@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { ContentDatabase, CaseStudy } from '../types';
 import { initialData } from '../data/initialData';
+import { getAssetUrl } from '../utils/assetUrl';
 
 interface HomePageProps {
   data: ContentDatabase;
@@ -74,7 +75,7 @@ export const HomePage: React.FC<HomePageProps> = ({ data, onNavigate }) => {
           <div className="mt-14 sm:mt-20 relative rounded-2xl sm:rounded-3xl border border-white/[0.1] bg-[#0E1017] p-2 sm:p-3 shadow-2xl overflow-hidden group">
             <div className="relative aspect-video rounded-xl sm:rounded-2xl overflow-hidden bg-slate-900">
               <img
-                src="/images/hero_production_agency.jpg"
+                src={getAssetUrl('/images/hero_production_agency.jpg')}
                 alt="Top Spark digital production studio with cameras and editing stations"
                 className="w-full h-full object-cover object-center transform group-hover:scale-[1.01] transition-transform duration-700"
                 referrerPolicy="no-referrer"
@@ -243,7 +244,7 @@ export const HomePage: React.FC<HomePageProps> = ({ data, onNavigate }) => {
               <div>
                 <div className="relative aspect-video w-full overflow-hidden bg-slate-900">
                   <img
-                    src={cs.image}
+                    src={getAssetUrl(cs.image)}
                     alt={cs.altText}
                     className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
                     referrerPolicy="no-referrer"
@@ -371,7 +372,7 @@ export const HomePage: React.FC<HomePageProps> = ({ data, onNavigate }) => {
               <div>
                 <div className="relative aspect-video rounded-xl overflow-hidden mb-6 bg-slate-900 border border-white/10">
                   <img
-                    src={product.image}
+                    src={getAssetUrl(product.image)}
                     alt={product.name}
                     className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
                     referrerPolicy="no-referrer"

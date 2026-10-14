@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowUpRight, Filter } from 'lucide-react';
 import { ContentDatabase } from '../types';
+import { getAssetUrl } from '../utils/assetUrl';
 
 interface CaseStudiesPageProps {
   data: ContentDatabase;
@@ -67,7 +68,7 @@ export const CaseStudiesPage: React.FC<CaseStudiesPageProps> = ({ data, onNaviga
             <div>
               <div className="relative aspect-video w-full overflow-hidden bg-slate-900">
                 <img
-                  src={study.image}
+                  src={getAssetUrl(study.image)}
                   alt={study.altText}
                   className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
                   referrerPolicy="no-referrer"

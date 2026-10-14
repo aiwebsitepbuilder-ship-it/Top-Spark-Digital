@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowRight, CheckCircle2, ShieldCheck, Zap } from 'lucide-react';
 import { ContentDatabase } from '../types';
+import { getAssetUrl } from '../utils/assetUrl';
 
 interface ProductsPageProps {
   data: ContentDatabase;
@@ -38,7 +39,7 @@ export const ProductsPage: React.FC<ProductsPageProps> = ({ data, onNavigate }) 
               <div className={`lg:col-span-6 ${idx % 2 === 1 ? 'lg:order-2' : ''}`}>
                 <div className="rounded-2xl border border-white/10 bg-slate-900 overflow-hidden shadow-2xl aspect-video relative group">
                   <img
-                    src={product.image}
+                    src={getAssetUrl(product.image)}
                     alt={product.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     referrerPolicy="no-referrer"

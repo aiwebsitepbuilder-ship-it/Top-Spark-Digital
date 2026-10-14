@@ -7,10 +7,10 @@ import { defineConfig } from 'vite';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig(() => {
-  // Base path configuration: defaults to relative './' for universal compatibility
-  // across root domains (https://aiwebsitebuilder-ship-it.github.io/),
-  // repository subpaths, Hostinger, and custom domains.
-  const base = process.env.VITE_BASE_PATH || './';
+  // Base path for GitHub Pages project repository:
+  // https://aiwebsitepbuilder-ship-it.github.io/Top-Spark-Digital/
+  // Supports VITE_BASE_PATH override for custom domain or local preview
+  const base = process.env.VITE_BASE_PATH || '/Top-Spark-Digital/';
 
   return {
     base,

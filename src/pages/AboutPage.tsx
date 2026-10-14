@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowRight, CheckCircle2, MapPin, Video, Award, Target, Eye } from 'lucide-react';
 import { ContentDatabase } from '../types';
+import { getAssetUrl } from '../utils/assetUrl';
 
 interface AboutPageProps {
   data: ContentDatabase;
@@ -53,7 +54,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ data, onNavigate }) => {
           <div className="rounded-3xl border border-white/[0.08] bg-[#0E1017] overflow-hidden p-3 shadow-2xl">
             <div className="aspect-square rounded-2xl overflow-hidden bg-slate-900 relative">
               <img
-                src="/images/hero_production_agency.jpg"
+                src={getAssetUrl('/images/hero_production_agency.jpg')}
                 alt="Top Spark digital media studio and production center in Dhaka"
                 className="w-full h-full object-cover"
                 referrerPolicy="no-referrer"
