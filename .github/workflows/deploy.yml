@@ -38,6 +38,9 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
+      - name: Type Check
+        run: npm run lint
+
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
 
@@ -48,8 +51,8 @@ jobs:
 
       - name: Verify Production Build
         run: |
-          test -f dist/index.html
-          echo "Production index.html exists"
+          node scripts/verify-build.js
+          echo "Production index.html and assets verified"
           find dist -maxdepth 2 -type f | head -50
 
       - name: Upload Pages Artifact
